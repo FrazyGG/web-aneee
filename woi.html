@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FRAZY STORE | V82 ULTIMATE</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --accent: #00f2fe; --gold: #ffcf40; --red: #ff4d4d; --green: #2ecc71; --orange: #ffa500; --bg: #050508; --glass: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.07); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: #fff; overflow-x: hidden; padding-bottom: 110px; background-image: radial-gradient(circle at 50% -20%, #112244 0%, transparent 50%); }
+
+        .video-banner { width: 100%; max-width: 420px; margin: 0 auto 20px; border-radius: 24px; border: 1px solid var(--glass-border); overflow: hidden; }
+        .video-banner video { width: 100%; display: block; }
+
+        #custom-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 350px; background: rgba(20, 20, 25, 0.9); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); padding: 15px 20px; border-radius: 20px; z-index: 11000; display: flex; align-items: center; gap: 15px; transition: 0.5s; pointer-events: none; }
+        #custom-alert.show { top: 30px; }
+
+        .status-success { color: var(--green) !important; font-weight: 800; }
+        .status-pending { color: var(--orange) !important; font-weight: 800; }
+
+        .auth-input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 16px; color: white; border-radius: 16px; margin-bottom: 12px; font-size: 14px; outline: none; transition: 0.3s; }
+        .auth-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.06); }
+        
+        .btn-elite { width: 100%; padding: 16px; border-radius: 16px; border: none; background: linear-gradient(135deg, var(--accent), #4facfe); color: #000; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 11px; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3); }
+        .card-modern { background: var(--glass); border-radius: 24px; padding: 20px; border: 1px solid var(--glass-border); margin-bottom: 20px; }
+        
+        .navbar { padding: 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: rgba(5,5,8,0.8); backdrop-filter: blur(10px); z-index: 1000; }
+        .balance-pill { background: rgba(255, 207, 64, 0.1); border: 1px solid rgba(255, 207, 64, 0.2); padding: 6px 14px; border-radius: 100px; color: var(--gold); font-weight: 700; font-size: 12px; }
+
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 450px; height: 70px; background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; display: flex; justify-content: space-around; align-items: center; z-index: 2000; }
+        .nav-item { color: #555; text-align: center; flex: 1; cursor: pointer; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item i { font-size: 18px; margin-bottom: 4px; display: block; }
+        .nav-item span { font-size: 8px; font-weight: 700; text-transform: uppercase; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.open { display: flex; }
+        .modal-content { background: #0f0f14; border-radius: 28px; width: 100%; max-width: 380px; padding: 24px; border: 1px solid var(--glass-border); animation: modalScale 0.3s ease; }
+        @keyframes modalScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        .options-list { max-height: 300px; overflow-y: auto; margin-top: 15px; padding-right: 5px; }
+        .option-item { background: #16161d; border: 1px solid var(--glass-border); border-radius: 16px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .option-item.selected { border-color: var(--accent); background: rgba(0, 242, 254, 0.05); }
+        .radio-btn { width: 20px; height: 20px; border: 2px solid #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .option-item.selected .radio-btn::after { content: ''; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
+
+        .page { display: none; padding: 20px; max-width: 480px; margin: 0 auto; animation: slideUp 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop><source src="https://files.catbox.moe/k7y69n.mp3" type="audio/mpeg"></audio>
+    <div id="custom-alert"><i class="fas fa-info-circle"></i> <span id="alert-msg"></span></div>
+
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align:center;">
+            <div style="width:50px; height:50px; background:rgba(0, 242, 254, 0.1); border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-shopping-cart" style="color:var(--accent); font-size:20px;"></i>
+            </div>
+            <h3 style="font-family:'Space Grotesk'; color:#fff; margin-bottom:10px;">KONFIRMASI BELI</h3>
+            <p id="confirm-text" style="font-size:12px; color:#aaa; line-height:1.6; margin-bottom:25px;"></p>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <button onclick="closeConfirm()" style="background:#1a1a20; color:#555; border:none; border-radius:14px; padding:14px; font-weight:800; font-size:11px;">BATAL</button>
+                <button id="btn-confirm-final" class="btn-elite">KONFIRMASI</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="product-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title" style="font-family:'Space Grotesk'; color:var(--accent); text-align:center;">PILIH LAYANAN</h3>
+            <div id="sosmed-input-box" style="display:none; margin-top:15px;">
+                <p style="font-size:10px; color:#888; margin-bottom:5px; text-transform:uppercase; font-weight:800;">Masukkan Link Profil/Video:</p>
+                <input type="text" id="target-link" class="auth-input" placeholder="https://tiktok.com/@user/...">
+            </div>
+            <div id="modal-options" class="options-list"></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
+                <button onclick="closeModal()" style="background:#1a1a20; color:#555; border:none; border-radius:14px; padding:14px; font-weight:800;">BATAL</button>
+                <button onclick="executePurchase()" class="btn-elite">BELI SEKARANG</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="contact-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align:center;">
+            <h3 style="font-family:'Space Grotesk'; color:var(--accent); margin-bottom:20px;">HUBUNGI ADMIN</h3>
+            <button onclick="window.open('https://wa.me/6281230947427', '_blank')" class="btn-elite" style="background:#2ecc71; color:white; margin-bottom:15px;"><i class="fab fa-whatsapp"></i> WHATSAPP ADMIN</button>
+            <button onclick="window.open('https://t.me/rizkycuyy', '_blank')" class="btn-elite" style="background:#0088cc; color:white;"><i class="fab fa-telegram-plane"></i> TELEGRAM RIZKY</button>
+            <button onclick="closeContact()" style="background:none; border:none; color:#555; margin-top:20px; font-weight:800;">TUTUP</button>
+        </div>
+    </div>
+
+    <div id="auth-gateway" style="position:fixed; inset:0; background:var(--bg); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px;">
+        <div style="text-align:center; width:100%; max-width:380px;">
+            <h1 style="font-family:'Space Grotesk'; font-size:24px; margin-bottom:5px; letter-spacing: 2px;">FRAZY<span style="color:var(--accent)">STORE</span></h1>
+            <p style="font-size:10px; color:#555; margin-bottom:30px; letter-spacing:4px; font-weight:800;">V82 ULTIMATE EDITION</p>
+            <div id="login-form">
+                <input type="text" id="login-user" class="auth-input" placeholder="Username">
+                <input type="password" id="login-pass" class="auth-input" placeholder="Password">
+                <button onclick="handleLogin()" class="btn-elite">MASUK KE DASHBOARD</button>
+                <p style="margin-top:20px; font-size:12px; color:#555;">Belum terdaftar? <span onclick="toggleAuth(true)" style="color:var(--accent); cursor:pointer; font-weight:800;">Daftar Akun</span></p>
+            </div>
+            <div id="register-form" style="display:none;">
+                <input type="text" id="reg-user" class="auth-input" placeholder="Username Baru">
+                <input type="password" id="reg-pass" class="auth-input" placeholder="Password Baru">
+                <button onclick="handleRegister()" class="btn-elite">KONFIRMASI PENDAFTARAN</button>
+                <p style="margin-top:20px; font-size:12px; color:#555;">Sudah punya akun? <span onclick="toggleAuth(false)" style="color:var(--accent); cursor:pointer; font-weight:800;">Login</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" style="display:none;">
+        <div class="navbar">
+            <div style="font-family:'Space Grotesk'; font-weight:800; font-size:18px;">FRAZY<span style="color:var(--accent)">.</span></div>
+            <div id="nav-saldo" class="balance-pill">Rp 0</div>
+        </div>
+
+        <div id="home-page" class="page active">
+            <div class="video-banner"><video autoplay muted loop playsinline><source src="https://files.catbox.moe/udycb4.mp4" type="video/mp4"></video></div>
+            
+            <div class="card-modern">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><p style="font-weight:800; color:var(--accent); font-size:14px;">SUNTIK SOSMED</p><p style="font-size:10px; color:#555;">Followers, Likes, Views, dll.</p></div>
+                </div>
+                <button onclick="openMenu('SUNTIK SOSMED', SOSMED, true)" class="btn-elite" style="margin-top:15px; font-size:10px;">MULAI ORDER</button>
+            </div>
+
+            <div class="card-modern">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><p style="font-weight:800; color:var(--gold); font-size:14px;">PROMPT JAILBREAK</p><p style="font-size:10px; color:#aaa; margin-top:4px;">Unlock All limits (Gemini/Claude/Meta AI) agar bisa menjawab apa saja tanpa sensor.</p></div>
+                    <span style="font-size:12px; font-weight:800; color:var(--gold);">Rp 1.000</span>
+                </div>
+                <button onclick="openConfirmModal(JAILBREAK)" class="btn-elite" style="margin-top:15px; background:linear-gradient(135deg, #ffcf40, #ff9f00); color:#000; font-size:10px;">BELI SEKARANG</button>
+            </div>
+
+            <div class="card-modern">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><p style="font-weight:800; color:#ff4fac; font-size:14px;">USERBOT PREMIUM</p><p style="font-size:10px; color:#555;">Pilihan 1 Bulan / Perma.</p></div>
+                </div>
+                <button onclick="openMenu('USERBOT', USERBOT, false)" class="btn-elite" style="margin-top:15px; background:linear-gradient(135deg, #ff4fac, #4facfe); font-size:10px;">PILIH DURASI</button>
+            </div>
+
+            <div class="card-modern">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><p style="font-weight:800; color:var(--red); font-size:14px;">MURID TAG SCAM/FAKE TELEGRAM</p><p style="font-size:10px; color:#aaa; margin-top:4px;">Yaitu memberi label diprofil agar lebih keren, lu sesuaikan aja huruf besar kecil nya.</p></div>
+                    <span style="font-size:12px; font-weight:800; color:var(--gold);">Rp 30.000</span>
+                </div>
+                <button onclick="openConfirmModal(MURTAG)" class="btn-elite" style="margin-top:15px; background:var(--red); color:white; font-size:10px;">BELI SEKARANG</button>
+            </div>
+
+            <div class="card-modern">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><p style="font-weight:800; color:var(--gold); font-size:14px;">LAVENDOZ V7</p><p style="font-size:10px; color:#555;">Exclusive VIP Member & Reseller.</p></div>
+                </div>
+                <button onclick="openMenu('LAVENDOZ V7', LAVENDOZ, false)" class="btn-elite" style="margin-top:15px; background:linear-gradient(135deg, #ffcf40, #ff9f00); font-size:10px;">LIHAT PAKET</button>
+            </div>
+        </div>
+
+        <div id="topup-page" class="page">
+            <div class="card-modern" style="text-align:center;">
+                <h3 style="margin-bottom:15px; font-family:'Space Grotesk';">TOPUP SALDO</h3>
+                <img src="https://files.catbox.moe/bu6t2c.jpg" style="width:180px; border-radius:15px; margin-bottom:20px; border:2px solid var(--accent); padding:5px; background:white;">
+                <div style="text-align:left; font-size:11px; color:#aaa; margin-bottom:20px; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px dashed #333; line-height:1.6;">
+                    <p>• Scan QRIS di atas (Support All Payment).</p>
+                    <p>• Masukkan nominal pembayaran di bawah.</p>
+                    <p>• Klik Konfirmasi & kirim bukti ke Admin.</p>
+                </div>
+                <input type="number" id="depo-amount" class="auth-input" placeholder="Masukkan Nominal (Min Rp 1.000)">
+                <button onclick="submitDeposit()" class="btn-elite">KONFIRMASI TOPUP</button>
+            </div>
+        </div>
+
+        <div id="admin-page" class="page">
+            <h2 style="font-family:'Space Grotesk'; margin-bottom:20px; font-size:18px;">ADMIN TOOLS</h2>
+            
+            <div class="card-modern" style="border-color: var(--accent); background: rgba(0, 242, 254, 0.02);">
+                <p style="font-weight:800; color:var(--accent); font-size:12px; margin-bottom:15px; text-transform:uppercase;">Kelola Saldo User</p>
+                <div style="margin-bottom:15px;">
+                    <p style="font-size:10px; color:#555; margin-bottom:5px;">USER ID (ALPHANUMERIC):</p>
+                    <input type="text" id="adj-uid" class="auth-input" placeholder="Contoh: FZ-A1B2">
+                    <p style="font-size:10px; color:#555; margin-top:10px; margin-bottom:5px;">NOMINAL:</p>
+                    <input type="number" id="adj-amount" class="auth-input" placeholder="Jumlah Saldo">
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button onclick="processSaldo('add')" class="btn-elite" style="background:var(--green); color:#fff;"><i class="fas fa-plus-circle"></i> TAMBAH</button>
+                    <button onclick="processSaldo('sub')" class="btn-elite" style="background:var(--red); color:#fff;"><i class="fas fa-minus-circle"></i> KURANGI</button>
+                </div>
+            </div>
+
+            <h2 style="font-family:'Space Grotesk'; margin:30px 0 20px; font-size:18px;">PENDING TOPUP</h2>
+            <div id="pending-list"></div>
+        </div>
+
+        <div id="history-page" class="page"><h2 style="font-family:'Space Grotesk'; margin-bottom:20px; font-size:18px;">RIWAYAT TRANSAKSI</h2><div id="history-list"></div></div>
+        
+        <div id="profile-page" class="page" style="text-align:center;">
+            <div class="card-modern">
+                <div style="width:60px; height:60px; background:var(--accent); border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800; font-size:24px;"><i class="fas fa-user"></i></div>
+                <h2 id="p-username" style="font-family:'Space Grotesk'; margin-bottom:5px;">-</h2>
+                <p id="p-uid-display" style="font-size:12px; color:var(--accent); font-weight:800; margin-bottom:25px; letter-spacing:2px; background:rgba(0, 242, 254, 0.1); padding:5px 10px; border-radius:8px; display:inline-block;"></p>
+                
+                <input type="password" id="new-pass" class="auth-input" placeholder="Password Baru">
+                <button onclick="changePassword()" class="btn-elite" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--glass-border); box-shadow:none;">GANTI PASSWORD</button>
+                <button onclick="logout()" style="color:var(--red); font-weight:800; background:none; border:none; margin-top:30px; cursor:pointer; font-size:12px;">LOGOUT DARI AKUN</button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showPage('home-page', this)"><i class="fas fa-home"></i><span>Home</span></div>
+            <div class="nav-item" onclick="showPage('topup-page', this)"><i class="fas fa-wallet"></i><span>Topup</span></div>
+            <div id="admin-nav" class="nav-item" style="display:none;" onclick="showPage('admin-page', this)"><i class="fas fa-shield-halved"></i><span>Admin</span></div>
+            <div class="nav-item" onclick="showPage('history-page', this)"><i class="fas fa-history"></i><span>History</span></div>
+            <div class="nav-item" onclick="showPage('profile-page', this)"><i class="fas fa-user-cog"></i><span>Profil</span></div>
+            <div class="nav-item" onclick="openContact()" style="color:var(--green)"><i class="fab fa-whatsapp"></i><span>Hubungi</span></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyA4icTKxcabo__FBFhcvdV6UR77XlYhutQ", authDomain: "frazy-d77d3.firebaseapp.com", projectId: "frazy-d77d3", storageBucket: "frazy-d77d3.firebasestorage.app", messagingSenderId: "15377479281", appId: "1:15377479281:web:463d812c762a664f214dd0" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let currUser = null, selectedItem = null, isSosmedMenu = false;
+
+        const SOSMED = [{n:"IG Followers 100 Indo", p:7250}, {n:"IG Followers 500 Indo", p:28250}, {n:"IG Followers 1000 Indo", p:54500}, {n:"IG Likes 100", p:2790}, {n:"IG Likes 1000", p:10450}, {n:"IG Saves 1000", p:2047}, {n:"IG Views 1000", p:2300}, {n:"IG Views 1jt", p:18050}, {n:"IG Report 1k Acc", p:21667}, {n:"TT Followers 100", p:4650}, {n:"TT Followers 1000", p:24650}, {n:"TT Followers 100 Indo", p:12650}, {n:"TT Followers 1000 Indo", p:90150}, {n:"TT Likes 100", p:2100}, {n:"TT Likes 1000", p:2500}, {n:"TT Likes 100 Indo", p:5050}, {n:"TT Likes 1000 Indo", p:28050}, {n:"TT Views 1000", p:3000}, {n:"TT Views 10000", p:5200}, {n:"TT Favorite 1000", p:3012}, {n:"TT Report 1k Acc", p:22476}, {n:"TT Shares 1000", p:2284}, {n:"TT Shares 10000", p:4840}, {n:"WA Channel 100 Mbr", p:6000}, {n:"WA Channel 1000 Mbr", p:41000}];
+        const USERBOT = [{n:"Userbot 1 Bulan", p:1000, l:"https://t.me/+EtYCOCRIc3MxYTU1"}, {n:"Userbot Perma", p:2000, l:"https://t.me/+CzfEl8YPMUZhZWNl"}];
+        const JAILBREAK = {n:"Prompt Jailbreak AI", p:1000, l:"https://pastebin.com/raw/XbxiJAf3"};
+        const MURTAG = {n:"Murid Tag Scam/Fake", p:30000, l:"https://t.me/+Yks5Wcl4o7A2NjY1"};
+        const LAVENDOZ = [{n:"Member 1 Bulan", p:35000, l:"https://t.me/+Yks5Wcl4o7A2NjY1"}, {n:"Member Perma", p:80000, l:"https://t.me/+Kk4ZaZ1vA9A1ODJl"}, {n:"Reseller 1 Bulan", p:90000, l:"https://t.me/+bY5YHxXEqxM5ZWU1"}, {n:"Reseller Perma", p:150000, l:"https://t.me/+KhsANz0H0dIwZTk1"}, {n:"Owner Access", p:250000, l:"https://t.me/+HgWSt11MSfJmOTY9"}, {n:"Rank: CEO", p:350000, l:"https://t.me/+dyWbbtxn8idjM2E1"}];
+
+        function playMusic() { const m = document.getElementById('bg-music'); m.volume = 1.0; document.addEventListener('click', () => m.play(), { once: true }); }
+        function toggleAuth(isReg) { document.getElementById('login-form').style.display = isReg ? 'none' : 'block'; document.getElementById('register-form').style.display = isReg ? 'block' : 'none'; }
+
+        async function handleLogin() {
+            const u = document.getElementById('login-user').value.trim().toLowerCase(), p = document.getElementById('login-pass').value.trim();
+            if(!u || !p) return notify("Isi semua kolom!");
+            const oDoc = await db.collection("owner").doc(u).get();
+            if(oDoc.exists && oDoc.data().password === p) { localStorage.setItem('frazy_sid', u); localStorage.setItem('frazy_role', 'owner'); location.reload(); }
+            else {
+                const uDoc = await db.collection("users").doc(u).get();
+                if(uDoc.exists && uDoc.data().password === p) { localStorage.setItem('frazy_sid', u); localStorage.setItem('frazy_role', 'user'); location.reload(); }
+                else notify("Login Gagal!");
+            }
+        }
+
+        async function handleRegister() {
+            const u = document.getElementById('reg-user').value.trim().toLowerCase(), p = document.getElementById('reg-pass').value.trim();
+            if(!u || !p) return notify("Isi semua kolom!");
+            const check = await db.collection("users").doc(u).get();
+            if(check.exists) return notify("Username sudah dipakai!");
+            
+            // Generate Alphanumeric ID (FZ-XXXX)
+            const chars = '0123456789ABCDEF';
+            let randomPart = '';
+            for (let i = 0; i < 4; i++) { randomPart += chars.charAt(Math.floor(Math.random() * chars.length)); }
+            const finalID = "FZ-" + randomPart;
+
+            await db.collection("users").doc(u).set({ username: u, password: p, saldo: 0, uid: finalID });
+            notify("Sukses! ID lu: " + finalID); toggleAuth(false);
+        }
+
+        function openConfirmModal(item) {
+            document.getElementById('confirm-text').innerHTML = `Beli <b style='color:#fff;'>${item.n}</b> seharga <b style='color:var(--gold);'>Rp ${item.p.toLocaleString()}</b>? Saldo langsung terpotong.`;
+            document.getElementById('btn-confirm-final').onclick = () => buyDirect(item);
+            document.getElementById('confirm-modal').classList.add('open');
+        }
+        function closeConfirm() { document.getElementById('confirm-modal').classList.remove('open'); }
+
+        async function buyDirect(item) {
+            closeConfirm();
+            if(currUser.saldo < item.p) return notify("Saldo tidak cukup!");
+            const role = localStorage.getItem('frazy_role');
+            const newSaldo = currUser.saldo - item.p;
+            const trxId = "BUY-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+            await db.collection(role === 'owner' ? "owner" : "users").doc(currUser.username).update({ saldo: newSaldo });
+            await db.collection("history").doc(currUser.username).collection("list").doc(trxId).set({ trx: "Beli " + item.n, nominal: item.p, status: "Success", time: Date.now(), id_trx: trxId });
+            notify("Berhasil! Mengalihkan...");
+            setTimeout(() => { window.location.href = item.l; }, 1500);
+        }
+
+        async function processSaldo(type) {
+            const inputID = document.getElementById('adj-uid').value.trim().toUpperCase();
+            const amt = parseInt(document.getElementById('adj-amount').value);
+            if(!inputID || !amt || amt <= 0) return notify("Isi data dengan benar!");
+            const finalAmt = type === 'add' ? amt : -amt;
+            const action = type === 'add' ? "Penambahan" : "Pengurangan";
+            try {
+                // Search by alphanumeric UID
+                const q = await db.collection("users").where("uid", "==", inputID).limit(1).get();
+                if(q.empty) return notify("ID tidak ditemukan!");
+                const uDoc = q.docs[0];
+                const newSaldo = (uDoc.data().saldo || 0) + finalAmt;
+                if(newSaldo < 0) return notify("Saldo user tidak cukup!");
+                await db.collection("users").doc(uDoc.id).update({ saldo: newSaldo });
+                const trxId = "ADM-" + Math.random().toString(36).substr(2, 5).toUpperCase();
+                await db.collection("history").doc(uDoc.id).collection("list").doc(trxId).set({ trx: action + " oleh Admin", nominal: amt, status: "Success", time: Date.now(), id_trx: trxId });
+                notify("Saldo Berhasil di-Update!");
+                document.getElementById('adj-uid').value = ""; document.getElementById('adj-amount').value = "";
+            } catch(e) { notify("Gagal mengupdate saldo."); }
+        }
+
+        function openMenu(title, list, isSosmed) {
+            isSosmedMenu = isSosmed;
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('sosmed-input-box').style.display = isSosmed ? 'block' : 'none';
+            document.getElementById('modal-options').innerHTML = list.map(item => `<div class="option-item" onclick="selectItem(this, ${JSON.stringify(item).replace(/"/g, '&quot;')})"><div style="padding:10px;"><b>${item.n}</b><br><span style="color:var(--accent); font-size:12px;">Rp ${item.p.toLocaleString()}</span></div><div class="radio-btn"></div></div>`).join('');
+            document.getElementById('product-modal').classList.add('open');
+        }
+
+        function selectItem(el, item) { document.querySelectorAll('.option-item').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); selectedItem = item; }
+
+        async function executePurchase() {
+            if(!selectedItem) return notify("Pilih produk!");
+            let target = isSosmedMenu ? document.getElementById('target-link').value.trim() : "";
+            if(isSosmedMenu && !target) return notify("Isi link target!");
+            if(currUser.saldo < selectedItem.p) return notify("Saldo tidak cukup!");
+            const role = localStorage.getItem('frazy_role');
+            const newSaldo = currUser.saldo - selectedItem.p;
+            const trxId = "BUY-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+            await db.collection(role === 'owner' ? "owner" : "users").doc(currUser.username).update({ saldo: newSaldo });
+            await db.collection("history").doc(currUser.username).collection("list").doc(trxId).set({ trx: "Beli " + selectedItem.n, nominal: selectedItem.p, status: "Success", time: Date.now(), id_trx: trxId });
+            notify("Sukses!");
+            setTimeout(() => {
+                if(isSosmedMenu) window.open(`https://wa.me/6281230947427?text=${encodeURIComponent("Beli " + selectedItem.n + "\n" + target)}`, '_blank');
+                else window.location.href = selectedItem.l;
+                closeModal();
+            }, 1000);
+        }
+
+        async function submitDeposit() {
+            const amt = parseInt(document.getElementById('depo-amount').value);
+            if(!amt || amt < 1000) return notify("Min Rp 1.000");
+            const trxId = "DEP-" + Math.random().toString(36).substr(2, 5).toUpperCase();
+            const data = { trx: "Topup Saldo", nominal: amt, status: "Pending", user: currUser.username, uid: currUser.uid, id_trx: trxId, time: Date.now() };
+            await db.collection("deposits").doc(trxId).set(data);
+            await db.collection("history").doc(currUser.username).collection("list").doc(trxId).set(data);
+            window.open(`https://wa.me/6281230947427?text=${encodeURIComponent("Topup Rp " + amt + "\nUser: " + currUser.username + "\nID: " + trxId)}`, '_blank');
+        }
+
+        async function manageDepo(id, user, amt, type) {
+            const status = type === 'acc' ? 'Success' : 'Failed';
+            if(type === 'acc') {
+                const uRef = db.collection("users").doc(user), s = await uRef.get();
+                if(s.exists) await uRef.update({ saldo: (s.data().saldo || 0) + amt });
+            }
+            await db.collection("deposits").doc(id).delete();
+            await db.collection("history").doc(user).collection("list").doc(id).update({ status: status });
+            notify("Selesai!");
+        }
+
+        function openContact() { document.getElementById('contact-modal').classList.add('open'); }
+        function closeContact() { document.getElementById('contact-modal').classList.remove('open'); }
+        function closeModal() { document.getElementById('product-modal').classList.remove('open'); }
+        function showPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById(id).classList.add('active'); if(el) el.classList.add('active'); }
+        function notify(msg) { const b = document.getElementById('custom-alert'); document.getElementById('alert-msg').innerText = msg; b.classList.add('show'); setTimeout(() => b.classList.remove('show'), 3000); }
+        function logout() { localStorage.clear(); location.reload(); }
+
+        async function changePassword() {
+            const np = document.getElementById('new-pass').value.trim();
+            if(!np || np.length < 4) return notify("Min 4 Karakter!");
+            const role = localStorage.getItem('frazy_role');
+            await db.collection(role === 'owner' ? "owner" : "users").doc(currUser.username).update({ password: np });
+            notify("Password Diganti!");
+            document.getElementById('new-pass').value = "";
+        }
+
+        function initApp() {
+            const sid = localStorage.getItem('frazy_sid'), role = localStorage.getItem('frazy_role');
+            if(!sid) return;
+            document.getElementById('auth-gateway').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            playMusic();
+            if(role === 'owner') {
+                document.getElementById('admin-nav').style.display = 'block';
+                db.collection("deposits").onSnapshot(q => {
+                    let h = "";
+                    q.forEach(doc => {
+                        const d = doc.data();
+                        h += `<div class="card-modern"><p style="font-weight:800;">Rp ${d.nominal.toLocaleString()}</p><p style="font-size:10px; color:#555;">User: ${d.user} | ID: ${d.uid}</p><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;"><button onclick="manageDepo('${doc.id}', '${d.user}', ${d.nominal}, 'acc')" style="background:var(--green); color:white; border:none; padding:8px; border-radius:10px; font-weight:800;">ACC</button><button onclick="manageDepo('${doc.id}', '${d.user}', ${d.nominal}, 'dec')" style="background:var(--red); color:white; border:none; padding:8px; border-radius:10px; font-weight:800;">DEC</button></div></div>`;
+                    });
+                    document.getElementById('pending-list').innerHTML = h || "<p style='color:#333; font-size:12px;'>Kosong.</p>";
+                });
+            }
+            db.collection(role === 'owner' ? "owner" : "users").doc(sid).onSnapshot(s => {
+                if(!s.exists) return;
+                currUser = s.data();
+                document.getElementById('p-username').innerText = currUser.username.toUpperCase();
+                document.getElementById('nav-saldo').innerText = "Rp " + (currUser.saldo || 0).toLocaleString();
+                document.getElementById('p-uid-display').innerText = "ID: " + (currUser.uid || "FZ-NONE");
+            });
+            db.collection("history").doc(sid).collection("list").orderBy("time", "desc").onSnapshot(q => {
+                let h = "";
+                q.forEach(doc => {
+                    const d = doc.data(), sClass = d.status === 'Success' ? 'status-success' : 'status-pending';
+                    h += `<div class="card-modern" style="padding:15px;"><div style="display:flex; justify-content:space-between;"><b>${d.trx}</b><span class="${sClass}" style="font-size:10px;">${d.status.toUpperCase()}</span></div><p style="font-size:12px; color:#555; margin-top:5px;">Rp ${d.nominal.toLocaleString()}</p></div>`;
+                });
+                document.getElementById('history-list').innerHTML = h || "<p style='color:#333; font-size:12px;'>Belum ada transaksi.</p>";
+            });
+        }
+        window.onload = initApp;
+    </script>
+</body>
+</html>
